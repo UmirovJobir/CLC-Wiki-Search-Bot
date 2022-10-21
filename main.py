@@ -5,6 +5,12 @@ from telegram.update import Update
 from telegram.ext import Updater, Dispatcher, CommandHandler, CallbackContext, MessageHandler, Filters
 import settings
 import requests  
+import logging
+
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.DEBUG
+)
 
 
 # bot = Bot(token="5552099898:AAGrWUcDRf0-Fg5sD5G6HZsS4EYZQLK-DYc")
@@ -18,10 +24,16 @@ def start(update: Update, context: CallbackContext):
 
 def search(update: Update, context: CallbackContext):
     args = context.args
+
+    logging.info('checking args length')
+
     if len(args)==0:
         update.message.reply_text("/search kamandasidan so'ng diqirmoqchi bo'lgan ma'lumotingizni yozing!")
     else:
         search_text = ' '.join(args)
+
+        logging.info('send request to Wikipedia API')
+
         response = requests.get('https://uz.wikipedia.org/w/api.php',{
             'action':'opensearch',
             'search':search_text,
@@ -29,6 +41,9 @@ def search(update: Update, context: CallbackContext):
             'namespace':0,
             'format':'json',
         })
+
+        logging.info('result from Wikipedia API')
+
         result = response.json()
         link = result[3]
 
