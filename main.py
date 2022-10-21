@@ -2,7 +2,7 @@ from urllib import response
 from telegram.bot import Bot
 from telegram.user import User
 from telegram.update import Update
-from telegram.ext import Updater, Dispatcher, CommandHandler, CallbackContext
+from telegram.ext import Updater, Dispatcher, CommandHandler, CallbackContext, MessageHandler, Filters
 import settings
 import requests  
 
@@ -18,27 +18,31 @@ def start(update: Update, context: CallbackContext):
 
 def search(update: Update, context: CallbackContext):
     args = context.args
-    search_text = ' '.join(args)
-    response = requests.get('https://en.wikipedia.org/w/api.php',{
-        'action':'opensearch',
-        'search':search_text,
-        'limit':1,
-        'namespace':0,
-        'format':'json',
-    })
-    result = response.json()
-    link = result[3]
-
-    if len(link):
-        update.message.reply_text("Sizning so'rovingiz bo'yicha havola:" + link[0])
+    if len(args)==0:
+        update.message.reply_text("/search kamandasidan so'ng diqirmoqchi bo'lgan ma'lumotingizni yozing!")
     else:
-        update.message.reply_text("Sizning so'rovingiz bo'yicha hech narsa yo'q")
+        search_text = ' '.join(args)
+        response = requests.get('https://uz.wikipedia.org/w/api.php',{
+            'action':'opensearch',
+            'search':search_text,
+            'limit':1,
+            'namespace':0,
+            'format':'json',
+        })
+        result = response.json()
+        link = result[3]
+
+        if len(link):
+            update.message.reply_text("Sizning so'rovingiz bo'yicha havola:" + link[0])
+        else:
+            update.message.reply_text("Sizning so'rovingiz bo'yicha hech narsa yo'q")
 
 updater = Updater(token=settings.TOKEN)
 
 dipatcher = updater.dispatcher
 updater.dispatcher.add_handler(CommandHandler("start", start))
 updater.dispatcher.add_handler(CommandHandler("search", search))
+updater.dispatcher.add_handler(MessageHandler(Filters.all,start))
 
 
 
