@@ -1,4 +1,3 @@
-from urllib import response
 from telegram.bot import Bot
 from telegram.user import User
 from telegram.update import Update
